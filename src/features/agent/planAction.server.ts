@@ -1,5 +1,9 @@
 import { z } from 'zod'
-import { type AgentPlanV1, AgentPlanV1Schema, type MissingField } from './schema'
+import {
+  type AgentPlanV1,
+  AgentPlanV1Schema,
+  type MissingField,
+} from './schema'
 import {
   normalizeChainName,
   normalizeExecutionPayload,
@@ -83,7 +87,8 @@ function buildClarifyPlan(
   missingFields: MissingField[],
   reason?: string,
 ): AgentPlanV1 {
-  const details = reason ?? 'I need a few details before I can execute this safely.'
+  const details =
+    reason ?? 'I need a few details before I can execute this safely.'
   return {
     version: '1.0',
     intent_id: crypto.randomUUID(),
@@ -117,7 +122,9 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
   const recipient = findRecipient(input.userText)
 
   if (text.includes('withdraw') && text.includes('aave')) {
-    const chain = chains.find((value) => value === 'base' || value === 'arbitrum')
+    const chain = chains.find(
+      (value) => value === 'base' || value === 'arbitrum',
+    )
     const missing: MissingField[] = []
     if (!amount) missing.push('amount')
     if (!chain) missing.push('from_chain')
@@ -146,7 +153,8 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
         },
         {
           type: 'wallet_connect_request',
-          reason: 'Wallet connection is required to prepare and execute this transaction.',
+          reason:
+            'Wallet connection is required to prepare and execute this transaction.',
         },
         {
           type: 'execution_card',
@@ -157,8 +165,13 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
     }
   }
 
-  if ((text.includes('deposit') || text.includes('supply')) && text.includes('aave')) {
-    const chain = chains.find((value) => value === 'base' || value === 'arbitrum')
+  if (
+    (text.includes('deposit') || text.includes('supply')) &&
+    text.includes('aave')
+  ) {
+    const chain = chains.find(
+      (value) => value === 'base' || value === 'arbitrum',
+    )
     const missing: MissingField[] = []
     if (!amount) missing.push('amount')
     if (!chain) missing.push('to_chain')
@@ -187,7 +200,8 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
         },
         {
           type: 'wallet_connect_request',
-          reason: 'Wallet connection is required to prepare and execute this transaction.',
+          reason:
+            'Wallet connection is required to prepare and execute this transaction.',
         },
         {
           type: 'execution_card',
@@ -230,11 +244,14 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
         {
           type: 'intent_summary',
           title: 'Swap Plan',
-          lines: [`Swap ${amount} ${tokenIn} on ${fromChain} to ${tokenOut} on ${toChain}.`],
+          lines: [
+            `Swap ${amount} ${tokenIn} on ${fromChain} to ${tokenOut} on ${toChain}.`,
+          ],
         },
         {
           type: 'wallet_connect_request',
-          reason: 'Wallet connection is required to prepare and execute this transaction.',
+          reason:
+            'Wallet connection is required to prepare and execute this transaction.',
         },
         {
           type: 'execution_card',
@@ -278,7 +295,8 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
         },
         {
           type: 'wallet_connect_request',
-          reason: 'Wallet connection is required to prepare and execute this transaction.',
+          reason:
+            'Wallet connection is required to prepare and execute this transaction.',
         },
         {
           type: 'execution_card',
@@ -320,7 +338,8 @@ function buildHeuristicPlan(input: PlanActionInput): AgentPlanV1 {
         },
         {
           type: 'wallet_connect_request',
-          reason: 'Wallet connection is required to prepare and execute this transaction.',
+          reason:
+            'Wallet connection is required to prepare and execute this transaction.',
         },
         {
           type: 'execution_card',
@@ -363,15 +382,15 @@ async function buildModelPlan(input: PlanActionInput): Promise<AgentPlanV1> {
     return buildHeuristicPlan(input)
   }
 
-  const [{ generateObject }, { createOpenAI }] = await Promise.all([
+  const [{ generateObject }, { createOpenRouter }] = await Promise.all([
     import('ai'),
-    import('@ai-sdk/openai'),
+    import('@openrouter/ai-sdk-provider'),
   ])
 
-  const openrouter = createOpenAI({
-    name: 'openrouter',
+  const openrouter = createOpenRouter({
     apiKey,
     baseURL: process.env.OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1',
+    compatibility: 'strict',
     headers: {
       ...(process.env.OPENROUTER_HTTP_REFERER
         ? { 'HTTP-Referer': process.env.OPENROUTER_HTTP_REFERER }
@@ -412,13 +431,17 @@ async function buildModelPlan(input: PlanActionInput): Promise<AgentPlanV1> {
   return sanitizePlan(AgentPlanV1Schema.parse(result.object))
 }
 
-export async function runPlanAction(data: PlanActionInput): Promise<AgentPlanV1> {
+export async function runPlanAction(
+  data: PlanActionInput,
+): Promise<AgentPlanV1> {
   const parsedInput = PlanActionInputSchema.parse(data)
   try {
     const plan = await buildModelPlan(parsedInput)
     const parsed = AgentPlanV1Schema.safeParse(plan)
     if (!parsed.success) {
-      const fallback = buildClarifyPlan(parsedInput.userText, ['protocol_action'])
+      const fallback = buildClarifyPlan(parsedInput.userText, [
+        'protocol_action',
+      ])
       return {
         ...fallback,
         ui_blocks: [
