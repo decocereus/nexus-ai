@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "skills": {
+    "nexus-elements-bridge-deposit": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "0f88e1f03d762448bfeb0cf1e1a68672eda46e081b7aa77fbe8b4fe4f2605941"
+    },
+    "nexus-elements-common": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "8ff1c57e7e8307f754b6fef556bd27a914c20190ee7e73ea27869c795ae23d64"
+    },
+    "nexus-elements-deposit": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "3a24d1965a538e3d82c4421b0d5402ab98aed0963b7006d961ccca0112851b8a"
+    },
+    "nexus-elements-fast-bridge": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "355ca448400146e56c3b29ea79683afabba7c0579432fa2a4bd6292ee10655b5"
+    },
+    "nexus-elements-nexus-provider": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "895e20d70991698d7e133b52ecad9ba101b709aea8e4085f1c4a397bdb30fccc"
+    },
+    "nexus-elements-overview": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "e4cb6f8bdef8ebcc505f3298e129de27ee06141324ec9add3d2200a687c75c19"
+    },
+    "nexus-elements-swaps": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "fe9c01bcd981a830f0f15ceccd7217e9567dfd8bb73fcc7d726d09532e30d362"
+    },
+    "nexus-elements-transfer": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "6d5fd9f9e624f27b3ea104f7e2d9a73499d3e053234297549002116b76cb066e"
+    },
+    "nexus-elements-unified-balance": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "82769a1c894e65ae7f4bf1a6fa670ddd78660dfdf6952cb7e906849170790a5c"
+    },
+    "nexus-elements-view-history": {
+      "source": "availproject/nexus-elements",
+      "sourceType": "github",
+      "computedHash": "2323bd5e54f9ce5c8641812d7c78dda9f47656df7d245a6e3c6a20eb31d42615"
+    },
+    "nexus-sdk-balances-metadata-utils": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "18d7941c527b0a459ef5d8fd637d18e6e42b572a64df1cec8cd0b60743e4801f"
+    },
+    "nexus-sdk-bridge-flows": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "58cb24fbd0432960c6ac6aad628f9a3dac1dcdd303fdf0b1829432f287c16327"
+    },
+    "nexus-sdk-hooks-events": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "c47cf6b04de6aca5e90dbb785dbd28d0f50cdd371ba487320359ccaa428f807a"
+    },
+    "nexus-sdk-integration": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "aa524d3cb88068e92043043801742ae4698856f5716237d24c840723e0b9600e"
+    },
+    "nexus-sdk-setup": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "34b465b140051575a956dd0ee9f8b5f92f6eeaccddcf815a0d58431b28fbd1ba"
+    },
+    "nexus-sdk-swap-flows": {
+      "source": "availproject/nexus-sdk",
+      "sourceType": "github",
+      "computedHash": "3552e67e85a42b9c5ee8c96543a863be89bbe818ad0b75cfc52de09530933e91"
+    }
+  }
+}
