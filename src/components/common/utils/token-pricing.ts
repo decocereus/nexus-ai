@@ -1,0 +1,144 @@
+import type { SupportedChainsAndTokensResult } from "@avail-project/nexus-core";
+
+const COINBASE_SPOT_API_BASE = "https://api.coinbase.com/v2/prices";
+const COINBASE_EXCHANGE_RATES_API_BASE =
+  "https://api.coinbase.com/v2/exchange-rates";
+
+export const DEFAULT_COINBASE_PRICE_REQUEST_TIMEOUT_MS = 4_000;
+export const USD_PEGGED_FALLBACK_RATE = 1;
+export const DEFAULT_USD_PEGGED_TOKEN_SYMBOLS = [
+  "USDT",
+  "USDC",
+  "USDS",
+  "DAI",
+  "USDM",
+  "FDUSD",
+  "BUSD",
+  "TUSD",
+  "PYUSD",
+  "GUSD",
+  "LUSD",
+  "USDE",
+  "USDP",
+] as const;
+
+type CoinbaseSpotPriceResponse = {
+  data?: {
+    amount?: string | number;
+  };
+};
+
+type CoinbaseExchangeRatesResponse = {
+  data?: {
+    rates?: Record<string, string | number>;
+  };
+};
+
+type SupportedTokenMetadata = {
+  symbol?: string;
+  equivalentCurrency?: string;
+};
+
+type SupportedChainMetadata = {
+  tokens?: SupportedTokenMetadata[];
+};
+
+export function normalizeTokenSymbol(tokenSymbol: string): string {
+  return tokenSymbol.trim().toUpperCase();
+}
+
+export function toFinitePositiveNumber(value: unknown): number | null {
+  const parsed = Number.parseFloat(String(value));
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+export function getCoinbaseSymbolCandidates(tokenSymbol: string): string[] {
+  const normalized = normalizeTokenSymbol(tokenSymbol);
+  if (!normalized) return [];
+
+  const baseSymbol = normalized.split(/[._-]/)[0] ?? normalized;
+  const wrappedBase =
+    baseSymbol.startsWith("W") && baseSymbol.length > 3
+      ? baseSymbol.slice(1)
+      : null;
+
+  return Array.from(
+    new Set(
+      [normalized, baseSymbol, wrappedBase].filter(
+        (symbol): symbol is string => Boolean(symbol),
+      ),
+    ),
+  );
+}
+
+export function buildUsdPeggedSymbolSet(
+  supportedChains: SupportedChainsAndTokensResult | null,
+  baseSymbols: Iterable<string> = DEFAULT_USD_PEGGED_TOKEN_SYMBOLS,
+): Set<string> {
+  const symbolSet = new Set(baseSymbols);
+
+  for (const chain of (supportedChains ?? []) as SupportedChainMetadata[]) {
+    for (const token of chain.tokens ?? []) {
+      const symbol = normalizeTokenSymbol(token.symbol ?? "");
+      const equivalent = normalizeTokenSymbol(token.equivalentCurrency ?? "");
+      if (!symbol) continue;
+
+      if (equivalent && symbolSet.has(equivalent)) {
+        symbolSet.add(symbol);
+      }
+    }
+  }
+
+  return symbolSet;
+}
+
+async function fetchJsonWithTimeout<T>(
+  url: string,
+  requestTimeoutMs: number,
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function fetchCoinbaseUsdRate(
+  tokenSymbol: string,
+  requestTimeoutMs = DEFAULT_COINBASE_PRICE_REQUEST_TIMEOUT_MS,
+): Promise<number | null> {
+  const normalized = normalizeTokenSymbol(tokenSymbol);
+  if (!normalized) return null;
+
+  for (const candidate of getCoinbaseSymbolCandidates(normalized)) {
+    const spotBody = await fetchJsonWithTimeout<CoinbaseSpotPriceResponse>(
+      `${COINBASE_SPOT_API_BASE}/${encodeURIComponent(candidate)}-USD/spot`,
+      requestTimeoutMs,
+    );
+    const spotAmount = toFinitePositiveNumber(spotBody?.data?.amount);
+    if (spotAmount) return spotAmount;
+
+    const exchangeRatesBody =
+      await fetchJsonWithTimeout<CoinbaseExchangeRatesResponse>(
+        `${COINBASE_EXCHANGE_RATES_API_BASE}?currency=${encodeURIComponent(candidate)}`,
+        requestTimeoutMs,
+      );
+    const exchangeRatesAmount = toFinitePositiveNumber(
+      exchangeRatesBody?.data?.rates?.USD,
+    );
+    if (exchangeRatesAmount) return exchangeRatesAmount;
+  }
+
+  return null;
+}

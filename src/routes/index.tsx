@@ -1,10 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ComponentExample } from "@/components/component-example";
+import { ClientOnly, createFileRoute } from '@tanstack/react-router'
+import { Suspense, lazy } from 'react'
 
-export const Route = createFileRoute("/")({ component: App });
+const ChatCanvasPage = lazy(() => import('@/features/chat/ChatCanvasPage'))
+
+export const Route = createFileRoute('/')({ component: App })
 
 function App() {
-return (
-  <ComponentExample />
-);
+  const fallback = <div className="min-h-screen bg-black" />
+
+  return (
+    <ClientOnly fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <ChatCanvasPage />
+      </Suspense>
+    </ClientOnly>
+  )
 }

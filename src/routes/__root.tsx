@@ -1,8 +1,16 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  ClientOnly,
+  HeadContent,
+  Scripts,
+  createRootRoute,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Suspense, lazy } from 'react'
 
 import appCss from '../styles.css?url'
+
+const Web3Provider = lazy(() => import('@/providers/Web3Provider'))
 
 export const Route = createRootRoute({
   head: () => ({
@@ -30,13 +38,21 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const appShellFallback = (
+    <div className="min-h-screen bg-background text-foreground" />
+  )
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ClientOnly fallback={appShellFallback}>
+          <Suspense fallback={appShellFallback}>
+            <Web3Provider>{children}</Web3Provider>
+          </Suspense>
+        </ClientOnly>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
